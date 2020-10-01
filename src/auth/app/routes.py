@@ -68,8 +68,7 @@ def registration():
     session.add(user)
     session.commit()
 
-    response = {'token': data['token']}
-    return jsonify(response)
+    return jsonify(token=data['token'])
 
 
 @app.route('/login')
@@ -84,8 +83,7 @@ def login():
     if not user or not user.check_password(data['password']):
         abort(401)
     login_user(user)
-    response = {'token': user.token}
-    return jsonify(response)
+    return jsonify(token=user.token)
 
 
 @app.route('/check')

@@ -36,6 +36,18 @@ class Task(Base):
     user_id = Column(Integer, ForeignKey('users.user_id'))
     user = relationship('User', back_populates='tasks')
 
+    @property
+    def serialize(self):
+        return {
+            'task_id': self.task_id,
+            'name': self.name,
+            'description': self.description,
+            'status': self.status,
+            'created': self.created,
+            'end_date': self.end_date,
+            'user_id': self.user_id,
+        }
+
 
 class TaskChange(Base):
     __tablename__ = 'task_changes'
@@ -45,3 +57,12 @@ class TaskChange(Base):
     new_value = Column(String)
     task_id = Column(Integer, ForeignKey('tasks.task_id'))
     task = relationship('Task', back_populates='task_changes')
+
+    @property
+    def serialize(self):
+        return {
+            'id': self.id,
+            'field_chenged': self.field_changed,
+            'new_value': self.new_value,
+            'task_id': self.task_id,
+        }
