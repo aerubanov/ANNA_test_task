@@ -11,6 +11,7 @@ class User(Base):
 
     user_id = Column(Integer, primary_key=True)
     username = Column(String, unique=True)
+    token = Column(String, unique=True)
     password_hash = Column(String)
 
     def __repr__(self):

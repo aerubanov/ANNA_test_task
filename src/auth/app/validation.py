@@ -4,6 +4,7 @@ import marshmallow as ma
 
 class RegistrationSchema(ma.Schema):
     username = ma.fields.String(required=True)
+    password = ma.fields.String(required=True)
     token = ma.fields.Str(dump_only=True)
 
     @ma.pre_load
@@ -16,5 +17,5 @@ class RegistrationSchema(ma.Schema):
 
 
 class AuthSchema(ma.Schema):
-    token = ma.fields.Str(required=True)
+    password = ma.fields.Str(required=True)
     username = ma.fields.String(required=True)
