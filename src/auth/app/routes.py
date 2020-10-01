@@ -28,12 +28,6 @@ def get_db():
     return g.db
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    session = get_db()
-    return session.query(User).get(int(user_id))
-
-
 @login_manager.request_loader
 def load_user_from_request(request):
     api_key = request.headers.get('Authorization')
@@ -44,7 +38,8 @@ def load_user_from_request(request):
         except TypeError:
             pass
         session = get_db()
-        user = session.query(User).filter(User.token == api_key).first()
+        api_key = api_key.decode('utf-8')
+        user = session.query(User).filter(User.auth_token == api_key).first()
         if user:
             return user
 
@@ -55,15 +50,14 @@ def load_user_from_request(request):
 def registration():
     try:
         data = RegistrationSchema().load(request.json)
-    except ValidationError as e:
+    except (ValidationError, KeyError) as e:
         abort(400, str(e))
         return
-
     session = get_db()
     if session.query(User).filter(User.username == data['username']).first():
         abort(400, 'User exist')
-    user = User(username=data['username'], token=data['token'])
-    user.set_password(data['password'])
+    user = User(username=data['username'], auth_token=data['token'])
+    user.set_password_hash(data['password'])
 
     session.add(user)
     session.commit()
@@ -71,7 +65,7 @@ def registration():
     return jsonify(token=data['token'])
 
 
-@app.route('/login')
+@app.route('/login', methods=['POST'])
 def login():
     try:
         data = AuthSchema().load(request.json)
@@ -80,16 +74,10 @@ def login():
         return
     session = get_db()
     user = session.query(User).filter(User.username == data['username']).first()
-    if not user or not user.check_password(data['password']):
+    if not user or not user.check_password_hash(data['password']):
         abort(401)
-    login_user(user)
-    return jsonify(token=user.token)
-
-
-@app.route('/check')
-@login_required
-def check():
-    return 'OK'
+    login_user(user, remember=False)
+    return jsonify(token=user.auth_token)
 
 
 @app.route('/about_me')
@@ -98,7 +86,6 @@ def about_me():
     return jsonify({
         'id': current_user.id,
         'username': current_user.username,
-        'token': current_user.token,
     })
 
 

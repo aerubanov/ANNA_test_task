@@ -2,20 +2,22 @@ from sqlalchemy import Column, DateTime, String, ForeignKey, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
 
 Base = declarative_base()
 
 
-class User(Base):
+class User(Base, UserMixin):
     __tablename__ = 'users'
 
-    user_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     username = Column(String, unique=True)
-    token = Column(String, unique=True)
+    auth_token = Column(String, unique=True)
     password_hash = Column(String)
+    tasks = relationship('Task', back_populates='users')
 
     def __repr__(self):
-        return f'user: {self.username} token: {self.user_id}'
+        return f'id: { self.id} user: {self.username} token: {self.auth_token}'
 
     def set_password_hash(self, password):
         self.password_hash = generate_password_hash(password)
@@ -33,8 +35,9 @@ class Task(Base):
     status = Column(String)
     created = Column(DateTime)
     end_date = Column(DateTime)
-    user_id = Column(Integer, ForeignKey('users.user_id'))
-    user = relationship('User', back_populates='tasks')
+    user_id = Column(Integer, ForeignKey('users.id'))
+    users = relationship('User', back_populates='tasks')
+    task_changes = relationship('TaskChange', back_populates='tasks')
 
     @property
     def serialize(self):
@@ -56,7 +59,7 @@ class TaskChange(Base):
     field_changed = Column(String)
     new_value = Column(String)
     task_id = Column(Integer, ForeignKey('tasks.task_id'))
-    task = relationship('Task', back_populates='task_changes')
+    tasks = relationship('Task', back_populates='task_changes')
 
     @property
     def serialize(self):

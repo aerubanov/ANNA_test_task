@@ -8,10 +8,12 @@ class RegistrationSchema(ma.Schema):
     token = ma.fields.Str(dump_only=True)
 
     @ma.pre_load
-    def process_input(self, data):
-        data['username'] = data['username'].lower.strip()
+    def process_input(self, data, **kwargs):
+        data['username'] = data['username'].lower().strip()
+        return data
 
-    def make_object(self, data):
+    @ma.post_load
+    def make_object(self, data, **kwargs):
         data['token'] = str(uuid.uuid4())
         return data
 
