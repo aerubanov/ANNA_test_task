@@ -32,7 +32,7 @@ services:
     build:
       context: ./src
       dockerfile: ./auth/Dockerfile
-    image: aerubanov/taskmanager/auth
+    image: aerubanov/taskmanager_auth
     container_name: auth
     networks:
       - backend
@@ -43,7 +43,7 @@ services:
     build:
       context: ./src
       dockerfile: ./taskboard/Dockerfile
-    image: aerubanov/taskmanager/taskboard
+    image: aerubanov/taskmanager_taskboard
     container_name: taskboard
     networks:
       - backend
