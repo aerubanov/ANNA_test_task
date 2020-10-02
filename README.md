@@ -1,4 +1,6 @@
 # ANNA_test_task
+[![Build Status](https://travis-ci.org/aerubanov/ANNA_test_task.svg?branch=master)](https://travis-ci.org/aerubanov/ANNA_test_task)
+[![codecov](https://codecov.io/gh/aerubanov/ANNA_test_task/branch/master/graph/badge.svg)](https://codecov.io/gh/aerubanov/ANNA_test_task)
 
 Приложение представляет собой task manager. Доступен Docker-образ приложения, который может загружен
  с dockerhub-а. Сборка образа осуществляется с помощью github-actions при каждом релизе.
