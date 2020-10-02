@@ -1,0 +1,53 @@
+version: "2"
+services:
+  PostgreSQL:
+    restart: always
+    image: postgres
+    container_name: postgres
+    environment:
+      - DEBUG=false
+
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=pgdb
+    volumes:
+      - ./database:/var/lib/postgresql/data
+    networks:
+      - backend
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  nginx:
+    build:
+      context: ./src/nginx
+    container_name: nginx_serv
+    ports:
+      - "8080:80"
+    networks:
+      - backend
+
+
+  auth:
+    restart: always
+    build:
+      context: ./src
+      dockerfile: ./auth/Dockerfile
+    image: aerubanov/taskmanager/auth
+    container_name: auth
+    networks:
+      - backend
+    command: gunicorn src.auth.run:app -b 0.0.0.0:8000
+
+  taskboard:
+    restart: always
+    build:
+      context: ./src
+      dockerfile: ./taskboard/Dockerfile
+    image: aerubanov/taskmanager/taskboard
+    container_name: taskboard
+    networks:
+      - backend
+    command: gunicorn src.taskboard.run:app -b 0.0.0.0:8000
+
+networks:
+  backend:

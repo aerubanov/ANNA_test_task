@@ -3,7 +3,6 @@ from flask_login import LoginManager, login_required, login_user, logout_user, c
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from marshmallow import ValidationError
-import base64
 
 from src.auth.app import app
 from src.auth.app.validation import RegistrationSchema, AuthSchema

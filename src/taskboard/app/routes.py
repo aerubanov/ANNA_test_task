@@ -112,6 +112,9 @@ def put_task():
     if args['new_end_date'] is not None:
         obj.end_date = args['new_end_date']
         changes.append(TaskChange(field_changed='end_date', new_value=args['new_end_date'], task_id=obj.task_id))
+    if args['new_status'] is not None:
+        obj.status = args['new_status']
+        changes.append(TaskChange(field_changed='status', new_value=args['new_status'], task_id=obj.task_id))
     session.commit()
     session.add_all(changes)
     session.commit()

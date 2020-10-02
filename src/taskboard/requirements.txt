@@ -1,0 +1,7 @@
+marshmallow
+flask
+sqlalchemy
+gunicorn
+psycopg2-binary
+flask_login
+requests
