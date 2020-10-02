@@ -1,0 +1,27 @@
+on:
+ release:
+   types: [published]
+
+
+
+jobs:
+ build:
+   runs-on: [ubuntu-latest]
+   env:
+     LOGIN: ${{ secrets.DOCKER_LOGIN }}
+     NAME: ${{ secrets.DOCKER_NAME }}
+   steps:
+    - name: Login to docker.io
+      run:  echo ${{ secrets.DOCKER_PWD }} | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
+    - uses: actions/checkout@master
+    - name: Build auth
+      run: docker-compose build auth
+      working-directory: ./
+    - name: Build taskboard
+      run: docker-compose build taskboard
+      working-directory: ./
+    - name: Push image auth
+      run: docker-compose push auth
+      working-directory: ./
+    - name: Push image taskboard
+      run: docker-compose push taskboard
