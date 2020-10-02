@@ -44,7 +44,7 @@ class ChangeTaskSchema(ma.Schema):
         if data['new_name'] is None and data['new_description']\
                 is None and data['new_end_date'] is None and data['new_status'] is None:
             raise ma.ValidationError('No parameter specified')
-        if data['new_status'] not in PERMISSIBLE_STATUS:
+        if data['new_status'] is not None and data['new_status'] not in PERMISSIBLE_STATUS:
             raise ma.ValidationError('Incorrect new status')
 
 

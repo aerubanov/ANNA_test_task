@@ -34,21 +34,21 @@ if __name__ == '__main__':
     task_id = data['task_id']
 
     # get tasks
-    resp = requests.get(host+'/tasks', headers={'Authorization': f'Basic {token}'}, json={})
+    resp = requests.get(host + '/tasks', headers={'Authorization': f'Basic {token}'}, json={})
     print(json.loads(resp.text))
 
     # change task
-    requests.put(host+'/task',
-                        headers={'Authorization': f'Basic {token}'},
-                        json={
-                            'task_id': task_id,
-                            'new_status': 'В работе',
-                        })
-    resp = requests.get(host+'/tasks',
+    requests.put(host + '/task',
+                 headers={'Authorization': f'Basic {token}'},
+                 json={
+                     'task_id': task_id,
+                     'new_status': 'В работе',
+                 })
+    resp = requests.get(host + '/tasks',
                         headers={'Authorization': f'Basic {token}'},
                         json={'filter_by_status': 'В работе'})
     print(json.loads(resp.text))
 
     # get task changes
-    resp = requests.get(host+'/task_changes', headers={'Authorization': f'Basic {token}'}, json={'task_id': task_id})
+    resp = requests.get(host + '/task_changes', headers={'Authorization': f'Basic {token}'}, json={'task_id': task_id})
     print(json.loads(resp.text))
