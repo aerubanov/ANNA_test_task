@@ -33,12 +33,7 @@ def load_user_from_request(request):
     api_key = request.headers.get('Authorization')
     if api_key:
         api_key = api_key.replace('Basic ', '', 1)
-        try:
-            api_key = base64.b64decode(api_key)
-        except TypeError:
-            pass
         session = get_db()
-        api_key = api_key.decode('utf-8')
         user = session.query(User).filter(User.auth_token == api_key).first()
         if user:
             return user

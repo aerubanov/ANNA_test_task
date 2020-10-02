@@ -25,18 +25,20 @@ def get_db():
     return g.db
 
 
-@app.route('/create_task', methods=['POST'])
+@app.route('/task', methods=['POST'])
 def post_task():
     resp = requests.get('http://auth:8000/about_me', headers=request.headers)
     if resp.status_code != 200:
         abort(403)
     user_data = json.loads(resp.text)
     user_id = user_data['id']
+
     try:
         data = TaskSchema().load(request.json)
     except ValidationError as e:
         abort(400, str(e))
         return
+
     task_name = data['name']
     task_description = data['description']
     task_created = data['created']
@@ -54,21 +56,22 @@ def post_task():
         mimetype='application/json')
 
 
-@app.route('/user_tasks', methods=['GET'])
+@app.route('/tasks', methods=['GET'])
 def get_tasks():
     resp = requests.get('http://auth:8000/about_me', headers=request.headers)
     if resp.status_code != 200:
         abort(403)
     user_data = json.loads(resp.text)
     user_id = user_data['id']
+
     try:
-        args = GetTasksSchema().load(request.args)
+        args = GetTasksSchema().load(request.json)
     except ValidationError as e:
         abort(400, str(e))
         return
-    session = get_db()
-    result = session.query(Task).join(Task.user).filter(Task.user == user_id)
 
+    session = get_db()
+    result = session.query(Task).filter(Task.user_id == user_id)
     if args['filter_by_status'] is not None:
         result = result.filter(Task.status == args['filter_by_status'])
     if args['filter_by_end_date'] is not None:
@@ -77,7 +80,7 @@ def get_tasks():
     return jsonify(result)
 
 
-@app.route('/change_task', methods=['POST'])
+@app.route('/task', methods=['PUT'])
 def put_task():
     resp = requests.get('http://auth:8000/about_me', headers=request.headers)
     if resp.status_code != 200:
@@ -86,13 +89,13 @@ def put_task():
     user_id = user_data['id']
 
     try:
-        args = ChangeTaskSchema().load(request.args)
+        args = ChangeTaskSchema().load(request.json)
     except ValidationError as e:
         abort(400, str(e))
         return
 
     session = get_db()
-    obj = session.session.query(Task).get(args['task_id'])
+    obj = session.query(Task).get(args['task_id'])
 
     if obj is None:
         abort(404, 'Task not exist')
@@ -102,17 +105,17 @@ def put_task():
     changes = []
     if args['new_name'] is not None:
         obj.name = args['new_name']
-        changes.append(TaskChange(field_changed='name', new_value=args['new_name'], task_id=obj.id))
+        changes.append(TaskChange(field_changed='name', new_value=args['new_name'], task_id=obj.task_id))
     if args['new_description'] is not None:
         obj.description = args['new_description']
-        changes.append(TaskChange(field_changed='description', new_value=args['new_description'], task_id=obj.id))
+        changes.append(TaskChange(field_changed='description', new_value=args['new_description'], task_id=obj.task_id))
     if args['new_end_date'] is not None:
-        obj.end_date = args['end_date']
-        changes.append(TaskChange(field_changed='end_time', new_value=args['new_end_time'], task_id=obj.id))
+        obj.end_date = args['new_end_date']
+        changes.append(TaskChange(field_changed='end_date', new_value=args['new_end_date'], task_id=obj.task_id))
     session.commit()
     session.add_all(changes)
     session.commit()
-    return
+    return 'OK'
 
 
 @app.route('/task_changes')
@@ -124,19 +127,21 @@ def get_changes():
     user_id = user_data['id']
 
     try:
-        args = TaskChangesSchema().load(request.args)
+        args = TaskChangesSchema().load(request.json)
         task_id = args['task_id']
     except ValidationError as e:
         abort(400, str(e))
         return
 
     session = get_db()
-    task_user_id = session.query(Task).get(task_id).task_id
-    if task_user_id != task_id:
+    task = session.query(Task).get(task_id)
+    if task is None:
+        abort(404)
+    if task.user_id != user_id:
         abort(403)
     result = session.query(TaskChange).filter(TaskChange.task_id == task_id).all()
     result = [i.serialize for i in result]
-    return result
+    return jsonify(result)
 
 
 @app.teardown_appcontext

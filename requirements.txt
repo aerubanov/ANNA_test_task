@@ -6,3 +6,6 @@ psycopg2-binary
 flask_login
 requests
 pytest
+pytest-cov
+pytest-pep8
+requests-mock

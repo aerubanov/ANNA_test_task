@@ -51,6 +51,10 @@ class Task(Base):
             'user_id': self.user_id,
         }
 
+    def __repr__(self):
+        return f'task_id: {self.task_id}, name: {self.name}, description: {self.description}, status: {self.status},' \
+               f' created: {self.created}, end_date: {self.end_date},  user_id: {self.user_id}'
+
 
 class TaskChange(Base):
     __tablename__ = 'task_changes'
@@ -65,7 +69,11 @@ class TaskChange(Base):
     def serialize(self):
         return {
             'id': self.id,
-            'field_chenged': self.field_changed,
+            'field_changed': self.field_changed,
             'new_value': self.new_value,
             'task_id': self.task_id,
         }
+
+    def __repr__(self):
+        return f'id: {self.id}, field_changed: {self.field_changed}, new_value: {self.new_value},' \
+               f' task_id: {self.task_id}'

@@ -28,20 +28,19 @@ def test_registration(test_client, database_session):
     assert 'token' in data
     assert len(data['token']) > 0
 
-
-def test_registration_missed_param(test_client, database_session):
+    # missing password
     resp = test_client.post('/registration',
                             json={'username': 'user'},
                             content_type='application/json')
     assert resp.status_code == 400
 
+    # missing username
     resp = test_client.post('/registration',
                             json={'password': 'qwerty'},
                             content_type='application/json')
     assert resp.status_code == 400
 
-
-def test_registration_exist_user(test_client, database_session):
+    # existing user
     test_client.post('/registration',
                      json={'username': 'user', 'password': 'qwerty'},
                      content_type='application/json')
@@ -53,22 +52,24 @@ def test_registration_exist_user(test_client, database_session):
 
 def test_login(test_client, database_session):
     token = '123TOKEN123'
-    token_encoded = base64.b64encode(b'123TOKEN123').decode('utf-8')
     user = User(username='user1', auth_token=token)
     user.set_password_hash('qwerty')
     database_session.add(user)
     database_session.commit()
 
+    # incorrect password
     resp = test_client.post('/login',
                             json={'username': 'user1', 'password': '123'},
                             content_type='application/json')
     assert resp.status_code == 401
 
+    # incorrect username
     resp = test_client.post('/login',
                             json={'username': 'use', 'password': 'qwerty'},
                             content_type='application/json')
     assert resp.status_code == 401
 
+    # missing password
     resp = test_client.post('/login',
                             json={'username': 'user1'},
                             content_type='application/json')
@@ -82,13 +83,13 @@ def test_login(test_client, database_session):
     assert 'token' in data
     assert data['token'] == token
 
-    other_token_encoded = base64.b64encode(b"123").decode('utf-8')
-    resp = test_client.get('/about_me', headers={'Authorization': f'Basic {other_token_encoded}'})
+    # incorrect token
+    other_token = "123"
+    resp = test_client.get('/about_me', headers={'Authorization': f'Basic {other_token}'})
     assert resp.status_code == 401
 
-    resp = test_client.get('/about_me', headers={'Authorization': f'Basic {token_encoded}'})
+    resp = test_client.get('/about_me', headers={'Authorization': f'Basic {token}'})
     assert resp.status_code == 200
     data = json.loads(resp.data)
     assert 'id' in data
     assert data['username'] == 'user1'
-
